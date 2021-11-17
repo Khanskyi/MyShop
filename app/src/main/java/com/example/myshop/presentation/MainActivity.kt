@@ -1,13 +1,14 @@
 package com.example.myshop.presentation
 
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.util.Log
-import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
 import com.example.myshop.R
+import com.example.myshop.presentation.ShopItemActivity.Companion.newIntentAddItem
+import com.example.myshop.presentation.ShopItemActivity.Companion.newIntentEditItem
+import com.google.android.material.floatingactionbutton.FloatingActionButton
 
 class MainActivity : AppCompatActivity() {
 
@@ -21,15 +22,21 @@ class MainActivity : AppCompatActivity() {
         setupRecyclerView()
 
         viewModel = ViewModelProvider(this)[MainViewModel::class.java]
-        viewModel.shopList.observe(this){
+        viewModel.shopList.observe(this) {
             shopListAdapter.submitList(it) //it sorts in other thread
+        }
+
+        val buttonAddShopItem = findViewById<FloatingActionButton>(R.id.button_add_shop_item)
+        buttonAddShopItem.setOnClickListener {
+            val intent = newIntentAddItem(this)
+            startActivity(intent)
         }
 
     }
 
-    private fun setupRecyclerView(){
+    private fun setupRecyclerView() {
         val rvShopList = findViewById<RecyclerView>(R.id.rv_shop_list)
-        with(rvShopList){
+        with(rvShopList) {
             shopListAdapter = ShopListAdapter()
             adapter = shopListAdapter
             recycledViewPool.setMaxRecycledViews(
@@ -72,7 +79,8 @@ class MainActivity : AppCompatActivity() {
 
     private fun setupClickListener() {
         shopListAdapter.onShopItemClickListener = {
-            Toast.makeText(this@MainActivity, it.name, Toast.LENGTH_SHORT).show()
+            val intent = newIntentEditItem(this, it.id)
+            startActivity(intent)
         }
     }
 
