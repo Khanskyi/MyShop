@@ -8,13 +8,14 @@ import android.text.Editable
 import android.text.TextWatcher
 import android.widget.Button
 import android.widget.EditText
+import android.widget.Toast
 import androidx.lifecycle.ViewModelProvider
 import com.example.myshop.R
 import com.example.myshop.domain.ShopItem
 import com.google.android.material.textfield.TextInputLayout
 import java.lang.RuntimeException
 
-class ShopItemActivity : AppCompatActivity() {
+class ShopItemActivity : AppCompatActivity(), ShopItemFragment.OnEditingFinishedListener {
 
     private var screenMode = MODE_UNKNOWN
     private var shopItemId = ShopItem.UNDEFINED_ID
@@ -23,29 +24,11 @@ class ShopItemActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_shop_item)
         parseIntent()
-        launchRightScreen()
-
+        if (savedInstanceState == null){
+            launchRightScreen()
+        }
     }
 
-
-//
-//    private fun launchAddMode(){
-//        buttonSave.setOnClickListener{
-//            viewModel.addShopItem(etName.text.toString(), etCount.text.toString())
-//        }
-//    }
-//
-//    private fun launchEditMode(){
-//        viewModel.getShopItem(shopItemId)
-//        viewModel.shopItem.observe(this){
-//            etName.setText(it.name)
-//            etCount.setText(it.count.toString())
-//        }
-//        buttonSave.setOnClickListener{
-//            viewModel.editShopItem(etName.text.toString(), etCount.text.toString())
-//        }
-//    }
-//
     private fun launchRightScreen(){
         val fragment = when (screenMode){
             MODE_ADD  -> ShopItemFragment.newInstanceAddItem()
@@ -53,10 +36,10 @@ class ShopItemActivity : AppCompatActivity() {
             else      -> throw RuntimeException("Unknown screen mode $screenMode")
         }
         supportFragmentManager.beginTransaction()
-            .add(R.id.shop_item_container, fragment)
+            .replace(R.id.shop_item_container, fragment)
             .commit()
     }
-//
+
     private fun parseIntent() {
         if (!intent.hasExtra(EXTRA_SCREEN_MODE)){
             throw RuntimeException("Param screen mode does not exists")
@@ -75,14 +58,6 @@ class ShopItemActivity : AppCompatActivity() {
             shopItemId = intent.getIntExtra(EXTRA_SHOP_ITEM_ID, ShopItem.UNDEFINED_ID)
         }
     }
-//
-//    private fun initViews() {
-//        tilName = findViewById(R.id.til_name)
-//        tilCount = findViewById(R.id.til_count)
-//        etName = findViewById(R.id.et_name)
-//        etCount = findViewById(R.id.et_count)
-//        buttonSave = findViewById(R.id.save_button)
-//    }
 
     companion object{
         private const val EXTRA_SCREEN_MODE = "extra_screen_mode"
@@ -104,6 +79,11 @@ class ShopItemActivity : AppCompatActivity() {
             return intent
         }
 
+    }
+
+    override fun onEditingFinished() {
+        Toast.makeText(this, "Success!", Toast.LENGTH_SHORT).show()
+        finish()
     }
 
 }
