@@ -12,8 +12,16 @@ import com.example.myshop.R
 import com.example.myshop.presentation.ShopItemActivity.Companion.newIntentAddItem
 import com.example.myshop.presentation.ShopItemActivity.Companion.newIntentEditItem
 import com.google.android.material.floatingactionbutton.FloatingActionButton
+import javax.inject.Inject
 
 class MainActivity : AppCompatActivity(), ShopItemFragment.OnEditingFinishedListener {
+
+    @Inject
+    lateinit var viewModelFactory: ViewModelFactory
+
+    private val component by lazy {
+        (application as ShoppingListApp).component
+    }
 
     private lateinit var viewModel: MainViewModel
     private lateinit var shopListAdapter: ShopListAdapter
@@ -21,12 +29,14 @@ class MainActivity : AppCompatActivity(), ShopItemFragment.OnEditingFinishedList
     private var shopItemContainer : FragmentContainerView? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        component.inject(this)
+
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         shopItemContainer = findViewById(R.id.shop_item_container)
         setupRecyclerView()
 
-        viewModel = ViewModelProvider(this)[MainViewModel::class.java]
+        viewModel = ViewModelProvider(this, viewModelFactory)[MainViewModel::class.java]
         viewModel.shopList.observe(this) {
             shopListAdapter.submitList(it) //it sorts in other thread
         }
@@ -89,7 +99,7 @@ class MainActivity : AppCompatActivity(), ShopItemFragment.OnEditingFinishedList
 
             override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
                 val item = shopListAdapter.currentList[viewHolder.adapterPosition]
-                viewModel.deleteShopList(item)
+                viewModel.deleteShopItem(item)
             }
 
         }

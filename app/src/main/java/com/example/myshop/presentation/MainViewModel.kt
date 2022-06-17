@@ -8,32 +8,26 @@ import com.example.myshop.domain.EditShopItemUseCase
 import com.example.myshop.domain.GetShopListUseCase
 import com.example.myshop.domain.ShopItem
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
-class MainViewModel(application: Application): AndroidViewModel(application) {
-
-    private val repository = ShopListRepositoryImpl(application)
-    private val getShopListUseCase = GetShopListUseCase(repository)
-    private val deleteShopItemUseCase = DeleteShopItemUseCase(repository)
-    private val editShopItemUseCase = EditShopItemUseCase(repository)
+class MainViewModel @Inject constructor(
+    private val getShopListUseCase: GetShopListUseCase,
+    private val deleteShopItemUseCase: DeleteShopItemUseCase,
+    private val editShopItemUseCase: EditShopItemUseCase
+) : ViewModel() {
 
     val shopList = getShopListUseCase.getShopList()
 
-    fun deleteShopList(shopItem: ShopItem){
+    fun deleteShopItem(shopItem: ShopItem) {
         viewModelScope.launch {
             deleteShopItemUseCase.deleteShopItem(shopItem)
         }
-
-
     }
 
-    fun changeEnableState(shopItem: ShopItem){
+    fun changeEnableState(shopItem: ShopItem) {
         viewModelScope.launch {
             val newItem = shopItem.copy(enabled = !shopItem.enabled)
             editShopItemUseCase.editShopItem(newItem)
         }
-
     }
-
-
-
 }
