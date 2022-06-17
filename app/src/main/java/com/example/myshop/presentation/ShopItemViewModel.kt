@@ -1,15 +1,15 @@
 package com.example.myshop.presentation
 
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
+import android.app.Application
+import androidx.lifecycle.*
 import com.example.myshop.data.ShopListRepositoryImpl
 import com.example.myshop.domain.*
+import kotlinx.coroutines.launch
 import java.lang.Exception
 
-class ShopItemViewModel : ViewModel() {
+class ShopItemViewModel(application: Application) : AndroidViewModel(application) {
 
-    private val repository = ShopListRepositoryImpl
+    private val repository = ShopListRepositoryImpl(application)
 
     private val addShopItemUseCase = AddShopItemUseCase(repository)
     private val editShopItemUseCase = EditShopItemUseCase(repository)
@@ -36,9 +36,12 @@ class ShopItemViewModel : ViewModel() {
         val count = parseCount(inputCount)
         val fieldsValid = validateInput(name, count)
         if (fieldsValid) {
-            val shopItem = ShopItem(name, count, true)
-            addShopItemUseCase.addShopItem(shopItem)
-            finishWork()
+            viewModelScope.launch {
+                val shopItem = ShopItem(name, count, true)
+                addShopItemUseCase.addShopItem(shopItem)
+                finishWork()
+            }
+
         }
     }
 
@@ -47,17 +50,22 @@ class ShopItemViewModel : ViewModel() {
         val count = parseCount(inputCount)
         val fieldsValid = validateInput(name, count)
         if (fieldsValid) {
-            _shopItem.value?.let {
-                val shopItem = it.copy(name = name, count = count)
-                editShopItemUseCase.editShopItem(shopItem)
-                finishWork()
+            viewModelScope.launch {
+                shopItem.value?.let {
+                    val shopItem = it.copy(name = name, count = count)
+                    editShopItemUseCase.editShopItem(shopItem)
+                    finishWork()
+                }
             }
         }
     }
 
     fun getShopItem(shopItemId: Int) {
-        val item = getShopItemUseCase.getShopItem(shopItemId)
-        _shopItem.value = item
+        viewModelScope.launch {
+            val item = getShopItemUseCase.getShopItem(shopItemId)
+            _shopItem.value = item
+        }
+
     }
 
     private fun parseName(inputName: String?): String {
